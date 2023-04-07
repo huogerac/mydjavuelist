@@ -1,0 +1,6 @@
+.github/
+.vscode
+.env
+.dockerignore
+.gitignore
+backend/
