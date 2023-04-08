@@ -39,3 +39,4 @@ COPY . ./
 EXPOSE 8000
 
 # COPY docker/bin/* /usr/bin/
+CMD ["gunicorn", "--bind", ":8000", "--workers", "2", "mydjavuelist.mydjavuelist.wsgi"]
