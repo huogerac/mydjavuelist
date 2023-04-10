@@ -1,6 +1,10 @@
+.git/
 .github/
-.vscode
+.vscode/
 .env
-.dockerignore
 .gitignore
 backend/
+docker/
+npm-debug.log
+**/node_modules/
+**/dist
