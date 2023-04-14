@@ -1,6 +1,6 @@
 [
   {
-    "model": "todos.Tasks",
+    "model": "core.Tasks",
     "pk": 1,
     "fields": {
       "description": "Task 1",
@@ -8,7 +8,7 @@
     }
   },
   {
-    "model": "todos.Tasks",
+    "model": "core.Tasks",
     "pk": 2,
     "fields": {
       "description": "Task 2",

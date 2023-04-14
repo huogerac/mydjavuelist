@@ -1,69 +1,95 @@
-# frontend
+# 1. Dev-env, super-easy mode (docker all things)
 
-## Build Setup
+Requirements:
+
+- [Install docker](https://docs.docker.com/install/)
+- Learn [Python](https://docs.python.org/3/tutorial/) and [Django](https://docs.djangoproject.com/en/2.0/intro/tutorial01/)
+- Learn [vue.js](vuejs.org)
+- Learn [Nuxt.js](https://nuxtjs.org/)
+- Get familiar with [Vuetify.js](vuetifyjs.com/) components
+
+Step by step
 
 ```bash
-# install dependencies
-$ npm install
-
-# serve with hot reload at localhost:3000
-$ npm run dev
-
-# build for production and launch server
-$ npm run build
-$ npm run start
-
-# generate static project
-$ npm run generate
+source dev.sh  # import useful bash functions
+devhelp  # like this one ;)
+dkbuild  # builds the docker image for this project. The first time Will take a while.
+dknpminstall  # I'll explain later!
+dkup  # Brings up everything
 ```
 
-For detailed explanation on how things work, check out the [documentation](https://nuxtjs.org).
+With `dkup` running, open another terminal
 
-## Special Directories
+```bash
+dk bash  # starts bash inside "mydjavuelist" container
+./manage.py migrate  # create database tables and stuff
+./manage.py createsuperuser  # creates an application user in the database
+```
 
-You can create the following extra directories, some of which have special behaviors. Only `pages` is required; you can delete them if you don't want to use their functionality.
+What is happenning:
 
-### `assets`
+- `dev.sh` is a collection of useful bash functions for this project's development environment. You're encouraged to look inside and see how that works, and add more as the project progresses.
+- `dknpminstall` will start a docker container and run `npm install` inside to download node dependencies to the `frontend/node_modules` folder. Using docker for this means you don't need to worry about installing (and choosing version for) node/npm.
+- `dkup` uses docker-compose to start 3 containers: postgres, nginx, and mydjavuelist.
+- The dockerized postgres saves its state into `docker/dkdata`. You can delete that if you want your dev database to go kaboom.
+- Once `dkup` is running, `dk <command>` will run `<command>` inside the `mydjavuelist` container. So `dk bash` will get you "logged in" as root inside that container. Once inside, you need to run Django's `manage.py` commands to initialize the database properly.
+- The mydjavuelist container runs 3 services:
+- django on port 8000
+- nuxt frontend with real APIs on port 3000
+- nuxt frontend with mock APIs on port 3001
+- nginx is configured to listen on port 80 and redirect to 8000 (requests going to `/api/*`) or 3000 (everything else).
+- Therefore, when `dkup` is running, you get a fully working dev-environment by pointing your browser to http://localhost, and a frontend-only-mock-api-based environment by pointing your browser to http://localhost:3001. Each one is more useful on different situations.
+- You're supposed to create features first by implementing them on 3001, then validate them, and only then write the backend APIs and integrate them. Experience shows this process is very productive.
 
-The assets directory contains your uncompiled assets such as Stylus or Sass files, images, or fonts.
+# 2. Dev-env, normal-easy mode (dockerize nginx + postgres)
 
-More information about the usage of this directory in [the documentation](https://nuxtjs.org/docs/2.x/directory-structure/assets).
+Running everything inside docker is a quick and easy way to get started, but sometimes we need to run things "for real", for example, when you need to debug python code.
 
-### `components`
+## Python setup
 
-The components directory contains your Vue.js components. Components make up the different parts of your page and can be reused and imported into your pages, layouts and even other components.
+Requirements:
 
-More information about the usage of this directory in [the documentation](https://nuxtjs.org/docs/2.x/directory-structure/components).
+- Understand about python [virtualenvs](https://docs.python.org/3/tutorial/venv.html)
+- Install [virtualenvwrapper](https://virtualenvwrapper.readthedocs.io/en/latest/) (not required, but recommended)
 
-### `layouts`
+Step by step
 
-Layouts are a great help when you want to change the look and feel of your Nuxt app, whether you want to include a sidebar or have distinct layouts for mobile and desktop.
+```bash
+dkpgnginx  # Starts postgres and nginx inside docker
+```
 
-More information about the usage of this directory in [the documentation](https://nuxtjs.org/docs/2.x/directory-structure/layouts).
+With `dkpgnginx` running, start another terminal:
 
+```bash
+mkvirtualenv mydjavuelist -p python3  # creates a python3 virtualenv
+pip install -r requirements.txt  # install python dependencies inside virtualenv
+export DJANGO_DB_PORT=5431  # That's where our dockerized postgres is listening
+./manage.py runserver  # starts django on port 8000
+```
 
-### `pages`
+Since nginx is also running you go ahead and point your browser to http://localhost/admin and you should see the same thing as in http://localhost:8000/admin
 
-This directory contains your application views and routes. Nuxt will read all the `*.vue` files inside this directory and setup Vue Router automatically.
+## Node Setup
 
-More information about the usage of this directory in [the documentation](https://nuxtjs.org/docs/2.x/get-started/routing).
+Requirements:
 
-### `plugins`
+- Install [nvm](https://github.com/creationix/nvm) (not required, but highly recommended)
 
-The plugins directory contains JavaScript plugins that you want to run before instantiating the root Vue.js Application. This is the place to add Vue plugins and to inject functions or constants. Every time you need to use `Vue.use()`, you should create a file in `plugins/` and add its path to plugins in `nuxt.config.js`.
+Step by step:
 
-More information about the usage of this directory in [the documentation](https://nuxtjs.org/docs/2.x/directory-structure/plugins).
+```bash
+nvm use 9  # Switch your terminal for node version 9.x
+# no need to npm install anything, we already have our node_modules folder
+sudo chmod -R o+rw .nuxt/  # I'll explain this later
+npm run dev  # Starts nuxt frontend on port 3000
+```
 
-### `static`
+You can go ahed and point your browser to http://localhost:3000 to see nuxt running **with mocked apis**
 
-This directory contains your static files. Each file inside this directory is mapped to `/`.
+To run nuxt using real APIs just turn set this environment variable API_MOCK=0
 
-Example: `/static/robots.txt` is mapped as `/robots.txt`.
+```bash
+API_MOCK=0 npm run dev  # Starts nuxt frontend on port 3000
+```
 
-More information about the usage of this directory in [the documentation](https://nuxtjs.org/docs/2.x/directory-structure/static).
-
-### `store`
-
-This directory contains your Vuex store files. Creating a file in this directory automatically activates Vuex.
-
-More information about the usage of this directory in [the documentation](https://nuxtjs.org/docs/2.x/directory-structure/store).
+Since nginx is also running you go ahead and point your browser to http://localhost/ and you should have a fully integrated frontend+backend dev env.
