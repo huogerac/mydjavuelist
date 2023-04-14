@@ -6,6 +6,7 @@ from .models import ActivityLog, Task
 class ActivityLogAdmin(admin.ModelAdmin):
     list_display = ('type', 'logged_user', 'created_at')
 
+
 class TaskAdmin(admin.ModelAdmin):
     list_display = ('description', 'done')
 
