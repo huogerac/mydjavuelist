@@ -2,14 +2,36 @@
 from django.http import JsonResponse
 from django.contrib import auth
 
-from ninja import Router, Form
+from ninja import Router, Form, Schema
 
 from ..core.service import log_svc
 
 router = Router()
 
 
-@router.post("/login")
+class PermissionSchema(Schema):
+    ADMIN: bool
+    STAFF: bool
+
+
+class UserSchema(Schema):
+    id: int
+    name: str
+    username: str
+    first_name: str
+    last_name: str
+    email: str
+    avatar: str = None
+    bio: str = None
+    permissions: PermissionSchema
+
+
+class LoggedUserSchema(Schema):
+    user: UserSchema
+    authenticated: bool
+
+
+@router.post("/login", response=UserSchema)
 def login(request, username: str = Form(...), password: str = Form(...)):
     username = request.POST["username"]
     password = request.POST["password"]
@@ -33,7 +55,7 @@ def logout(request):
     return JsonResponse({})
 
 
-@router.get("/whoami")
+@router.get("/whoami", response=LoggedUserSchema)
 def whoami(request):
     i_am = (
         {
