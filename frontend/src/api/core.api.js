@@ -1,5 +1,4 @@
 import api from "./config.js"
-import apiHelpers from "./helpers.js"
 
 export default {
   getTasks: async () => {
@@ -7,9 +6,10 @@ export default {
     return response.data
   },
   addNewTask: async (description) => {
+    const json = JSON.stringify({ description })
     const response = await api.post(
       "/api/core/tasks/add",
-      apiHelpers.dataToForm({ description })
+      json
     )
     return response.data
   },

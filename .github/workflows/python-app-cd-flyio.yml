@@ -20,4 +20,4 @@ jobs:
       - run: flyctl deploy --remote-only
     environment:
       name: production
-      url: https://meudjavuelistv1.fly.dev
+      url: https://mydjavuelist.fly.dev

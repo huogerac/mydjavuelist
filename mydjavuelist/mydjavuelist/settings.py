@@ -93,9 +93,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = (
-    "mydjavuelist.mydjavuelist.wsgi.application"
-)
+WSGI_APPLICATION = "mydjavuelist.mydjavuelist.wsgi.application"
 
 AUTH_USER_MODEL = "accounts.User"
 
@@ -149,9 +147,7 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATIC_ROOT = config("DJANGO_STATIC_ROOT", default=os.path.join(BASE_DIR, "static"))
 
-
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field

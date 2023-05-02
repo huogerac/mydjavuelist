@@ -1,19 +1,40 @@
 # coding: utf-8
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
 
-from ..commons.django_views_utils import ajax_login_required
+from typing import List, Optional
+
+from django.http import JsonResponse
+
+
+from ninja import Router, Form, Schema
+
 from .service import tasks_svc
 
 
-@csrf_exempt
-@ajax_login_required
-def add_task(request):
-    task = tasks_svc.add_task(request.POST["description"])
-    return JsonResponse(task)
+router = Router()
 
 
-@ajax_login_required
+class TaskSchema(Schema):
+    id: Optional[int]
+    description: str
+    done: bool = False
+
+
+class ListTasksSchema(Schema):
+    tasks: List[TaskSchema]
+
+
+
+
+@router.post("/tasks/add", response=TaskSchema)
+def add_task(request, task: TaskSchema):
+    new_task = tasks_svc.add_task(task.description)
+
+    return JsonResponse(new_task)
+
+
+
+@router.get("/tasks/list", response=ListTasksSchema)
+
 def list_tasks(request):
     tasks = tasks_svc.list_tasks()
     return JsonResponse({"tasks": tasks})

@@ -23,13 +23,13 @@ export const core = function (server) {
       })
 
       this.post("/tasks/add", function (schema, request) {
-        const description = request.requestBody.get("description")
+        const attrs = JSON.parse(request.requestBody)
         const loggedUser = getUserFromCookies(schema)
         if (!loggedUser) {
           return new Response(401, {}, "Header de segurança não encontrado")
         }
         let newTask = schema.tasks.create({
-          description,
+          description: attrs.description,
           userId: loggedUser.id,
         })
         return new Response(200, {}, newTask.attrs)
