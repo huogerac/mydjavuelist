@@ -24,10 +24,13 @@ RUN rm /bin/sh && ln -s /bin/bash /bin/sh && \
 RUN mkdir /dkdata
 
 #### Prepare BACKEND Django API
+RUN pip install pip-tools==6.13.0
+
 COPY requirements.txt ./
 COPY requirements-dev.txt ./
 
-RUN pip install -r requirements-dev.txt
+RUN pip-sync requirements-dev.txt
+#RUN pip install -r requirements-dev.txt
 
 ENV PYTHONUNBUFFERED=1 
 ENV PYTHONDONTWRITEBYTECODE=1
